@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b161a">
+  <meta name="description" content="파도 위에서 완성하는 나만의 라이딩. TIDELINE 서핑 크래시 게임 POC.">
+  <title>TIDELINE — Surf the moment</title>
+  <link rel="icon" type="image/svg+xml" href="./public/favicon.svg">
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="TIDELINE 홈"><svg viewBox="0 0 40 32" aria-hidden="true"><path d="M2 25C12 25 10 5 26 5c7 0 11 4 12 10-5-6-16-5-16 1 0 5 9 5 15 4-5 8-21 12-35 5Z" fill="currentColor"/></svg><span>TIDELINE<small>VIRTUAL SURF CLUB</small></span></a>
+      <nav aria-label="메인 메뉴"><button class="nav-button active" data-view="play" aria-current="page">플레이<span>01</span></button><button class="nav-button" data-view="records">라이딩 로그<span>02</span></button></nav>
+      <div class="header-actions"><span class="demo-badge">POC · DEMO</span><button id="sound-button" class="icon-button" aria-label="사운드 켜기" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4V5Zm5 4 5 6m0-6-5 6"/></svg></button><button id="help-button" class="icon-button" aria-label="플레이 방법">?</button><span class="profile-avatar">Y</span></div>
+    </header>
+    <main>
+      <section class="page-heading"><div><p class="eyebrow">ONE WAVE. YOUR MOMENT.</p><h1>파도는 함께, <span>순간은 나답게.</span></h1></div><div class="location-label"><span class="status-dot"></span> PACIFIC COAST <span class="location-time">36° N / 121° W</span></div></section>
+      <div id="play-view">
+        <div class="game-layout">
+          <div class="stage-column">
+            <section class="ocean-stage" aria-label="공통 파도 라이딩 장면">
+              <canvas id="ocean" aria-label="파도와 서퍼 애니메이션"></canvas>
+              <div class="stage-topline"><span class="stage-location"><span class="tiny-wave">≈</span> <span id="theme-title">PACIFIC / DAYBREAK</span></span><span id="round-tag">WAVE 001</span></div>
+              <div class="stage-readout"><p id="phase-label">다음 파도를 준비하세요</p><div id="multiplier">00:08</div><p id="phase-description">함께 출발하고, 원하는 순간에 탈출하세요.</p></div>
+              <div id="ride-result" class="ride-result" hidden role="status"><span id="result-kicker">RIDE COMPLETE</span><strong id="result-multiplier"></strong><p id="result-description"></p></div>
+              <div class="surfer-tag" id="surfer-tag"><i></i> YOU</div>
+              <div class="stage-bottomline"><span><i class="live-dot"></i> <span id="stage-status">LINEUP OPEN</span></span><div class="theme-switch" aria-label="해변 테마"><button data-theme="daybreak" class="selected" aria-pressed="true" aria-label="새벽 해변"><span class="theme-swatch dawn"></span></button><button data-theme="sunset" aria-pressed="false" aria-label="노을 해변"><span class="theme-swatch sunset"></span></button><button data-theme="moonlight" aria-pressed="false" aria-label="달빛 해변"><span class="theme-swatch night"></span></button></div><span class="stage-caption">STAY IN THE MOMENT</span></div>
+              <div class="countdown-track"><div id="countdown-fill"></div></div>
+            </section>
+            <section class="wave-history" aria-label="최근 파도 종료 배수"><span>최근 파도 <small>최종 배수</small></span><div id="history-chips"><span class="empty-inline">첫 파도를 기다리고 있어요</span></div></section>
+            <section class="style-panel"><div class="section-title"><div><span class="eyebrow">MAKE IT YOURS</span><h2>나의 라이딩 스타일</h2></div><span class="cosmetic-note">외형만 변경됩니다</span></div><div class="style-options"><div class="board-picker"><span class="field-label">보드 컬러</span><div class="swatches" aria-label="보드 컬러"><button class="selected" data-board="#d8f76d" style="--swatch:#d8f76d" aria-label="라임 보드" aria-pressed="true"></button><button data-board="#f2977d" style="--swatch:#f2977d" aria-label="코랄 보드" aria-pressed="false"></button><button data-board="#c3c3ee" style="--swatch:#c3c3ee" aria-label="라벤더 보드" aria-pressed="false"></button><button data-board="#f1efe5" style="--swatch:#f1efe5" aria-label="크림 보드" aria-pressed="false"></button></div></div><div class="finish-picker"><label for="finish-select" class="field-label">캐시아웃 피니시</label><select id="finish-select"><option value="air">에어 피니시 ↗</option><option value="spray">스프레이 턴 ≈</option><option value="barrel">배럴 탈출 →</option></select></div><p class="style-description">파도 밖으로 나오는 순간,<br>당신의 스타일이 완성됩니다.</p></div></section>
+          </div>
+          <aside class="control-column" aria-label="라이딩 조작 및 참가자">
+            <section class="bet-panel"><div class="panel-heading"><h2>내 라이딩</h2><span class="outline-badge">DEMO CREDIT</span></div><div class="balance-row"><span>사용 가능 잔액</span><strong><span id="balance">1,000.00</span><small>CR</small></strong></div><label class="field-label" for="bet-amount">참가 금액</label><div class="amount-input"><input id="bet-amount" type="number" inputmode="decimal" min="1" max="100" step="1" value="10" aria-describedby="bet-hint"><span>CR</span></div><div class="amount-presets"><button data-amount="5">5</button><button data-amount="10" class="selected">10</button><button data-amount="25">25</button><button data-amount="50">50</button></div><p id="bet-hint" class="input-hint">1–100 CR · 실제 금전 가치가 없는 데모</p><button id="ride-button" class="primary-button"><span id="ride-action">파도에 합류하기</span><span id="ride-action-detail">JOIN THE WAVE ↗</span></button><p id="bet-feedback" class="bet-feedback" role="status">참가 후 출발 전까지 취소할 수 있어요.</p><div class="personal-best-line"><span>↗ 내 최고 캐시아웃</span><strong id="best-inline">—</strong></div></section>
+            <section class="crew-panel"><div class="panel-heading"><h2>같은 파도 위의 크루</h2><span id="crew-count">6명</span></div><p class="crew-caption"><span class="status-dot"></span> 시뮬레이션 참가자 · 공통 라운드</p><div class="crew-list-header"><span>서퍼</span><span>라이딩 결과</span></div><div id="crew-list"></div><button id="view-all-crew" class="text-button">전체 참가자 보기 <span>↗</span></button></section>
+          </aside>
+        </div>
+        <section class="bottom-strip"><div><span class="strip-number">01</span><span><strong>같은 파도</strong><small>모두 같은 종료 시점</small></span></div><div><span class="strip-number">02</span><span><strong>나만의 탈출</strong><small>캐시아웃 순간 결과 확정</small></span></div><div><span class="strip-number">03</span><span><strong>완성된 기록</strong><small>실제 정산 배수만 기록</small></span></div><button id="open-records" class="text-button">내 라이딩 로그 <span>↗</span></button></section>
+      </div>
+      <section id="records-view" hidden><div class="records-heading"><div><p class="eyebrow">YOUR TIME IN THE WATER</p><h2>라이딩 로그</h2><p>파도의 끝과 내가 완성한 순간을 따로 기록합니다.</p></div><button id="back-to-play" class="secondary-button">파도로 돌아가기 ↗</button></div><div class="record-stats"><div><span>최고 캐시아웃</span><strong id="record-best">—</strong></div><div><span>완료한 라이딩</span><strong id="record-count">0</strong></div><div><span>현재 데모 잔액</span><strong id="record-balance">1,000.00 CR</strong></div></div><div class="record-table-wrap"><table><thead><tr><th>파도</th><th>내 결과</th><th>파도 종료</th><th>참가 금액</th><th>지급액</th><th>기록</th></tr></thead><tbody id="record-table"></tbody></table><p id="records-empty" class="empty-state">아직 라이딩 기록이 없어요.<br><span>첫 파도에 합류해 나만의 순간을 남겨보세요.</span></p></div></section>
+      <footer><span class="footer-brand">TIDELINE <small> / A SURFING EXPERIMENT</small></span><span>로컬 시뮬레이션 · 현금 베팅 및 실제 멀티플레이 없음</span><button id="demo-tools-toggle" class="text-button" aria-expanded="false" aria-controls="demo-tools">POC 도구 ↗</button></footer>
+      <section id="demo-tools" class="demo-tools" hidden><div><h2>POC 시나리오</h2><p>다음 파도의 종료 배수를 고정해 연출과 정산을 검증합니다. 일반 모드는 데모 분포를 사용하며 상용 RTP 인증을 의미하지 않습니다.</p></div><label for="scenario-select">다음 파도<select id="scenario-select"><option value="random">일반 데모</option><option value="1">즉시 종료 · 1.00×</option><option value="2.5">짧은 파도 · 2.50×</option><option value="12">긴 파도 · 12.00×</option></select></label><button id="reset-demo" class="secondary-button">데모 잔액 초기화</button><span id="scenario-status" role="status"></span></section>
+    </main>
+  </div>
+  <dialog id="info-dialog"><button class="dialog-close icon-button" aria-label="닫기">×</button><div id="dialog-content"></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

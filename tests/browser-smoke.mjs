@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 const output = new URL('./artifacts/', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
+const timeout = setTimeout(() => { console.error('Browser QA exceeded 3 minutes'); process.exit(1); }, 180000);
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
@@ -87,4 +88,4 @@ try {
   assert.deepEqual(errors, []);
   console.log('Browser checks passed: join/cancel, cashout, best, records, crew, help, themes, finish, instant crash, reload, mobile overflow.');
   console.log(`Screenshots: ${output}`);
-} finally { await browser.close(); }
+} finally { clearTimeout(timeout); await browser.close(); }

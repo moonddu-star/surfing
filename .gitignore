@@ -20,3 +20,4 @@ coverage/
 Thumbs.db
 
 tests/artifacts/
+public/fonts/

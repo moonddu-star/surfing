@@ -1,4 +1,4 @@
-import { SurfGame, CONFIG, displayedMultiplier } from './game-engine.js';
+import { SurfGame, CONFIG, displayedMultiplier, calculatePayout } from './game-engine.js';
 import { OceanScene } from './ocean-scene.js';
 
 const $ = id => document.getElementById(id);
@@ -45,7 +45,7 @@ function renderCrew(all = false) {
 }
 function render(now) {
   const waiting = game.phase === 'waiting'; const riding = game.phase === 'riding';
-  const own = game.bet; document.body.classList.toggle('live-own', riding && own?.status === 'riding'); const count = Math.max(0, Math.ceil((CONFIG.waitingMs - (now - game.phaseStarted)) / 1000));
+  const own = game.bet; document.body.classList.toggle('live-own', activeView === 'play' && riding && own?.status === 'riding'); const count = Math.max(0, Math.ceil((CONFIG.waitingMs - (now - game.phaseStarted)) / 1000));
   $('round-tag').textContent = `WAVE ${String(game.round).padStart(3, '0')}`;
   $('phase-label').textContent = waiting ? '다음 파도를 준비하세요' : riding ? '지금, 당신의 파도' : '이번 파도 종료';
   $('multiplier').textContent = waiting ? `00:${String(count).padStart(2, '0')}` : mult(game.multiplier);
@@ -60,7 +60,7 @@ function render(now) {
   const action = $('ride-button'); action.className = 'primary-button'; action.disabled = false;
   if (waiting && !own) { $('ride-action').textContent = '파도에 합류하기'; $('ride-action-detail').textContent = 'JOIN THE WAVE ↗'; }
   else if (waiting && own) { action.classList.add('cancel'); $('ride-action').textContent = '참가 취소'; $('ride-action-detail').textContent = `${format(own.amount)} CR · ${count}초 뒤 출발`; }
-  else if (riding && own?.status === 'riding') { action.classList.add('cashout'); $('ride-action').textContent = `${format(Math.floor(own.amount * displayedMultiplier(game.multiplier) * 100) / 100)} CR 캐시아웃`; $('ride-action-detail').textContent = 'FINISH YOUR RIDE ↗'; }
+  else if (riding && own?.status === 'riding') { action.classList.add('cashout'); $('ride-action').textContent = `${format(calculatePayout(own.amount, game.multiplier))} CR 캐시아웃`; $('ride-action-detail').textContent = 'FINISH YOUR RIDE ↗'; }
   else { action.disabled = true; $('ride-action').textContent = own?.status === 'cashed' ? '라이딩 완료' : own?.status === 'wiped' ? '와이프아웃' : '다음 파도 대기'; $('ride-action-detail').textContent = own?.status === 'cashed' ? `${mult(own.multiplier)} · 정산 완료` : '잠시 후 새로운 파도가 시작됩니다'; }
   $('bet-feedback').textContent = feedback || (waiting ? own ? '참가 완료! 출발 전에는 전액 취소할 수 있어요.' : '참가 후 출발 전까지 취소할 수 있어요.' : own?.status === 'riding' ? '피니시 연출과 관계없이 클릭 판정 시 정산됩니다.' : '공통 파도를 관전하고 있어요.');
   const result = game.lastResult;
@@ -77,11 +77,13 @@ function render(now) {
   if (helpOpen === 'crew') $('dialog-content').innerHTML = `<p class="dialog-eyebrow">ON THE SAME WAVE</p><h2>파도 ${game.round} · 전체 크루</h2><p>YOU 외 참가자는 로컬 시뮬레이션입니다.</p>${renderCrew(true)}`;
 }
 function renderRecords() {
-  $('record-best').textContent = game.best ? mult(game.best) : '—'; $('record-count').textContent = String(game.records.length); $('record-balance').textContent = `${format(game.balance)} CR`;
-  $('records-empty').hidden = game.records.length > 0;
-  $('record-table').innerHTML = game.records.map(record => `<tr><td>WAVE ${String(record.round).padStart(3, '0')}</td><td class="${record.status}">${record.status === 'cashed' ? mult(record.multiplier) : '와이프아웃'}</td><td>${record.crash === null ? '종료 미확인' : mult(record.crash)}</td><td>${format(record.amount)} CR</td><td>${format(record.payout)} CR</td><td>${record.isBest ? '<span class="best-pill">PERSONAL BEST</span>' : '—'}</td></tr>`).join('');
+  const records = game.serialize().records;
+  $('record-best').textContent = game.best ? mult(game.best) : '—'; $('record-count').textContent = String(records.length); $('record-balance').textContent = `${format(game.balance)} CR`;
+  $('records-empty').hidden = records.length > 0;
+  $('record-table').innerHTML = records.map(record => `<tr><td>WAVE ${String(record.round).padStart(3, '0')}</td><td class="${record.status}">${record.status === 'cashed' ? mult(record.multiplier) : '와이프아웃'}</td><td>${record.crash === null ? (record.round === game.round && game.phase === 'riding' ? '진행 중' : '종료 미확인') : mult(record.crash)}</td><td>${format(record.amount)} CR</td><td>${format(record.payout)} CR</td><td>${record.isBest ? '<span class="best-pill">PERSONAL BEST</span>' : '—'}</td></tr>`).join('');
 }
 function setView(view) {
+  if (view === 'records' && game.bet?.status === 'riding') { toast('현재 라이딩을 마친 뒤 기록을 확인할 수 있어요.'); return; }
   activeView = view; $('play-view').hidden = view !== 'play'; $('records-view').hidden = view !== 'records';
   document.querySelectorAll('[data-view]').forEach(button => { button.classList.toggle('active', button.dataset.view === view); if (button.dataset.view === view) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current'); });
   renderRecords(); if (view === 'play') scene.resize();
@@ -110,7 +112,11 @@ if (['daybreak', 'sunset', 'moonlight'].includes(saved.theme)) setTheme(saved.th
 if (['#d8f76d', '#f2977d', '#c3c3ee', '#f1efe5'].includes(saved.board)) setBoard(saved.board);
 if (['air', 'spray', 'barrel'].includes(saved.finish)) { scene.finish = saved.finish; $('finish-select').value = saved.finish; }
 $('sound-button').addEventListener('click', async () => {
-  try { soundContext ??= new AudioContext(); await soundContext.resume(); soundEnabled = !soundEnabled; $('sound-button').setAttribute('aria-pressed', soundEnabled); $('sound-button').setAttribute('aria-label', soundEnabled ? '사운드 끄기' : '사운드 켜기'); $('sound-button').style.color = soundEnabled ? 'var(--accent)' : ''; toast(soundEnabled ? '라이딩 사운드 켜짐' : '라이딩 사운드 꺼짐'); tone('launch'); } catch { toast('이 브라우저에서는 사운드를 사용할 수 없어요.'); }
+  try { soundContext ??= new AudioContext();
+    let resumeTimeout;
+    try { await Promise.race([soundContext.resume(), new Promise((_, reject) => { resumeTimeout = setTimeout(() => reject(new Error('Audio unavailable')), 2000); })]); }
+    finally { clearTimeout(resumeTimeout); }
+    soundEnabled = !soundEnabled; $('sound-button').setAttribute('aria-pressed', soundEnabled); $('sound-button').setAttribute('aria-label', soundEnabled ? '사운드 끄기' : '사운드 켜기'); $('sound-button').style.color = soundEnabled ? 'var(--accent)' : ''; toast(soundEnabled ? '라이딩 사운드 켜짐' : '라이딩 사운드 꺼짐'); tone('launch'); } catch { toast('이 브라우저에서는 사운드를 사용할 수 없어요.'); }
 });
 const dialog = $('info-dialog');
 $('help-button').addEventListener('click', () => {

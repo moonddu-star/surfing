@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SurfGame, CONFIG, sampleCrash } from '../src/game-engine.js';
+import { SurfGame, CONFIG, sampleCrash, displayedMultiplier, calculatePayout } from '../src/game-engine.js';
 const make = () => new SurfGame({ now: 0, random: () => .6 });
 const atMultiplier = multiplier => CONFIG.waitingMs + Math.log(multiplier) / CONFIG.growth * 1000;
 

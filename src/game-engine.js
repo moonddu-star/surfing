@@ -1,6 +1,9 @@
 export const CONFIG = Object.freeze({ waitingMs: 8000, resultMs: 4200, growth: 0.105, maxMultiplier: 50, startingBalance: 1000, minBet: 1, maxBet: 100 });
-const cents = value => Math.floor((value + Number.EPSILON) * 100) / 100;
-export const displayedMultiplier = value => Math.floor((value + Number.EPSILON) * 100) / 100;
+const minor = value => Math.round(value * 100);
+const cents = value => minor(value) / 100;
+export const displayedMultiplier = value => Math.floor(value * 100 + 1e-9) / 100;
+export const calculatePayout = (amount, multiplier) => Math.floor(minor(amount) * minor(displayedMultiplier(multiplier)) / 100) / 100;
+const addCredits = (left, right) => (minor(left) + minor(right)) / 100;
 
 // A local demo distribution only. No server authority or production RTP claim.
 export function sampleCrash(random = Math.random) {
@@ -41,12 +44,12 @@ export class SurfGame {
       this.multiplier = Math.min(this.crash, computed);
       for (const surfer of this.crew) {
         if (surfer.status === 'riding' && surfer.target < this.crash && surfer.target <= computed) {
-          surfer.status = 'cashed'; surfer.multiplier = surfer.target; surfer.payout = cents(surfer.amount * surfer.target);
+          surfer.status = 'cashed'; surfer.multiplier = surfer.target; surfer.payout = calculatePayout(surfer.amount, surfer.target);
           this.emit('crew-cashout', { name: surfer.name });
         }
       }
       // Ties belong to the crash. Requests first advance authoritative demo time.
-      if (computed >= this.crash) this.endRound(now);
+      if (now >= this.phaseStarted + Math.log(this.crash) / CONFIG.growth * 1000) this.endRound(now);
     } else if (this.phase === 'crashed' && now >= this.phaseStarted + CONFIG.resultMs) {
       // Start a fresh lobby after a suspended tab, never backfill unplayed rounds.
       this.startWaiting(now);
@@ -57,22 +60,22 @@ export class SurfGame {
     if (this.phase !== 'waiting' || this.bet) return { ok: false, error: '다음 파도 대기 시간에 참가할 수 있어요.' };
     if (!Number.isFinite(amount) || amount < CONFIG.minBet || amount > CONFIG.maxBet || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) return { ok: false, error: '참가 금액은 1–100 CR, 소수점 두 자리까지 입력하세요.' };
     if (amount > this.balance) return { ok: false, error: '데모 잔액이 부족해요. POC 도구에서 초기화할 수 있어요.' };
-    this.balance = cents(this.balance - amount); this.bet = { amount, status: 'waiting', payout: 0, multiplier: 0 }; this.lastResult = null;
+    this.balance = addCredits(this.balance, -amount); this.bet = { amount, status: 'waiting', payout: 0, multiplier: 0 }; this.lastResult = null;
     this.emit('joined'); return { ok: true };
   }
   cancel(now) {
     this.step(now);
     if (this.phase !== 'waiting' || this.bet?.status !== 'waiting') return { ok: false, error: '이미 출발한 라이딩은 취소할 수 없어요.' };
-    this.balance = cents(this.balance + this.bet.amount); this.bet = null; this.emit('cancelled'); return { ok: true };
+    this.balance = addCredits(this.balance, this.bet.amount); this.bet = null; this.emit('cancelled'); return { ok: true };
   }
   cashout(now) {
     this.step(now);
     if (this.phase !== 'riding' || this.bet?.status !== 'riding') return { ok: false, error: '캐시아웃 가능한 라이딩이 없어요.' };
     const multiplier = displayedMultiplier(this.multiplier);
-    const payout = cents(this.bet.amount * multiplier);
+    const payout = calculatePayout(this.bet.amount, multiplier);
     const previousBest = this.best;
     Object.assign(this.bet, { status: 'cashed', multiplier, payout, isBest: multiplier > previousBest, previousBest });
-    this.balance = cents(this.balance + payout); this.best = Math.max(this.best, multiplier);
+    this.balance = addCredits(this.balance, payout); this.best = Math.max(this.best, multiplier);
     this.lastResult = { ...this.bet, round: this.round };
     this.emit('cashout', { result: this.lastResult }); return { ok: true, payout };
   }
@@ -101,6 +104,6 @@ export class SurfGame {
     const refund = this.bet && ['waiting', 'riding'].includes(this.bet.status) ? this.bet.amount : 0;
     const pendingRecord = this.bet?.status === 'cashed' && !this.records.some(record => record.round === this.round)
       ? [{ ...this.bet, round: this.round, crash: null }] : [];
-    return { balance: cents(this.balance + refund), best: this.best, records: [...pendingRecord, ...this.records].slice(0, 100) };
+    return { balance: addCredits(this.balance, refund), best: this.best, records: [...pendingRecord, ...this.records].slice(0, 100) };
   }
 }

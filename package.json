@@ -11,7 +11,8 @@
     "test": "node --test tests/*.test.mjs",
     "check": "node --check src/main.js && node --check src/game-engine.js && node --check src/ocean-scene.js && npm test && npm run build",
     "test:browser": "node tests/browser-smoke.mjs",
-    "test:qa": "node tests/qa-matrix.mjs"
+    "test:qa": "node tests/qa-matrix.mjs",
+    "test:visual": "node tests/visual-qa.mjs"
   },
   "engines": {
     "node": ">=22"

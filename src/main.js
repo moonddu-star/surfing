@@ -9,7 +9,7 @@ let saved = {};
 try { saved = JSON.parse(localStorage.getItem(STORE) || '{}') || {}; } catch { /* Storage is optional in the POC. */ }
 const random = () => { const data = new Uint32Array(1); crypto.getRandomValues(data); return data[0] / 4294967296; };
 const game = new SurfGame({ now: performance.now(), random, saved });
-const scene = new OceanScene($('ocean'));
+const scene = new OceanScene($('ocean'), $('surfer-tag'));
 let activeView = 'play'; let lastUi = 0; let soundEnabled = false; let soundContext; let toastTimeout; let crewMarkup = ''; let feedback = ''; let helpOpen = false;
 
 function save() { try { localStorage.setItem(STORE, JSON.stringify({ ...game.serialize(), theme: scene.theme, board: scene.board, finish: scene.finish })); } catch { /* Private mode still permits play. */ } }
@@ -31,7 +31,7 @@ function processEvents(now) {
     if (event.type === 'crew-cashout') scene.onCrewCashout(event.name, now);
     if (event.type === 'crash') { scene.onCrash(now); tone('crash'); }
     if (event.type === 'launch') { feedback = ''; tone('launch'); }
-    if (event.type === 'waiting') { feedback = ''; $('scenario-select').value = 'random'; $('scenario-status').textContent = ''; }
+    if (event.type === 'waiting') { scene.onWaiting(); feedback = ''; $('scenario-select').value = 'random'; $('scenario-status').textContent = ''; }
     if (['cashout', 'crash', 'joined', 'cancelled', 'reset'].includes(event.type)) { save(); renderRecords(); }
   }
 }
@@ -46,6 +46,9 @@ function renderCrew(all = false) {
 function render(now) {
   const waiting = game.phase === 'waiting'; const riding = game.phase === 'riding';
   const own = game.bet; document.body.classList.toggle('live-own', activeView === 'play' && riding && own?.status === 'riding'); const count = Math.max(0, Math.ceil((CONFIG.waitingMs - (now - game.phaseStarted)) / 1000));
+  $('ocean-stage').dataset.phase = game.phase;
+  $('ocean-stage').dataset.result = own?.status || 'spectating';
+  $('camera-caption').textContent = waiting ? 'FIND YOUR LINE' : riding ? own?.status === 'cashed' ? 'YOUR MOMENT. CAPTURED.' : 'INSIDE THE BARREL' : 'THE OCEAN GOES ON';
   $('round-tag').textContent = `WAVE ${String(game.round).padStart(3, '0')}`;
   $('phase-label').textContent = waiting ? '다음 파도를 준비하세요' : riding ? '지금, 당신의 파도' : '이번 파도 종료';
   $('multiplier').textContent = waiting ? `00:${String(count).padStart(2, '0')}` : mult(game.multiplier);

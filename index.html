@@ -21,13 +21,13 @@
       <div id="play-view">
         <div class="game-layout">
           <div class="stage-column">
-            <section class="ocean-stage" aria-label="공통 파도 라이딩 장면">
-              <canvas id="ocean" aria-label="파도와 서퍼 애니메이션"></canvas>
+            <section id="ocean-stage" class="ocean-stage" aria-label="공통 파도 라이딩 장면">
+              <canvas id="ocean" aria-label="파도 터널 안에서 가까이 바라보는 서퍼와 탈출 애니메이션"></canvas>
               <div class="stage-topline"><span class="stage-location"><span class="tiny-wave">≈</span> <span id="theme-title">PACIFIC / DAYBREAK</span></span><span id="round-tag">WAVE 001</span></div>
-              <div class="stage-readout"><p id="phase-label">다음 파도를 준비하세요</p><div id="multiplier">00:08</div><p id="phase-description">함께 출발하고, 원하는 순간에 탈출하세요.</p></div>
+              <div class="stage-readout"><span class="camera-caption" id="camera-caption">FIND YOUR LINE</span><p id="phase-label">다음 파도를 준비하세요</p><div id="multiplier">00:08</div><p id="phase-description">함께 출발하고, 원하는 순간에 탈출하세요.</p></div>
               <div id="ride-result" class="ride-result" hidden role="status"><span id="result-kicker">RIDE COMPLETE</span><strong id="result-multiplier"></strong><p id="result-description"></p></div>
               <div class="surfer-tag" id="surfer-tag"><i></i> YOU</div>
-              <div class="stage-bottomline"><span><i class="live-dot"></i> <span id="stage-status">LINEUP OPEN</span></span><div class="theme-switch" aria-label="해변 테마"><button data-theme="daybreak" class="selected" aria-pressed="true" aria-label="새벽 해변"><span class="theme-swatch dawn"></span></button><button data-theme="sunset" aria-pressed="false" aria-label="노을 해변"><span class="theme-swatch sunset"></span></button><button data-theme="moonlight" aria-pressed="false" aria-label="달빛 해변"><span class="theme-swatch night"></span></button></div><span class="stage-caption">STAY IN THE MOMENT</span></div>
+              <div class="stage-bottomline"><span><i class="live-dot"></i> <span id="stage-status">LINEUP OPEN</span></span><div class="theme-switch" aria-label="해변 테마"><button data-theme="daybreak" class="selected" aria-pressed="true" aria-label="새벽 해변"><span class="theme-swatch dawn"></span></button><button data-theme="sunset" aria-pressed="false" aria-label="노을 해변"><span class="theme-swatch sunset"></span></button><button data-theme="moonlight" aria-pressed="false" aria-label="달빛 해변"><span class="theme-swatch night"></span></button></div><span class="stage-caption">FOLLOW THE FEELING ↗</span></div>
               <div class="countdown-track"><div id="countdown-fill"></div></div>
             </section>
             <section class="wave-history" aria-label="최근 파도 종료 배수"><span>최근 파도 <small>최종 배수</small></span><div id="history-chips"><span class="empty-inline">첫 파도를 기다리고 있어요</span></div></section>

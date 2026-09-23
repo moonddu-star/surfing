@@ -27,7 +27,7 @@ npm run preview
 - `check`: JavaScript 구문 검사 → 정산 단위·회귀 테스트 21개 → 정적 빌드.
 - `build`: `dist/`에 배포 가능한 정적 파일 생성.
 - `preview`: `dist/`를 4187 포트에서 제공. 개발 서버와 동시에 실행하려면 포트를 다르게 지정합니다.
-- GitHub Actions: main push 및 PR에서 검사 후 `surfing-poc-dist` 빌드 아티팩트를 저장합니다. 호스팅 배포는 수행하지 않습니다.
+- GitHub Actions: main push 및 PR에서 단위 테스트·브라우저 QA 후 `surfing-poc-dist` 빌드 아티팩트를 저장합니다. main에서는 검증된 `dist/`를 GitHub Pages에 자동 배포합니다. PR은 배포하지 않습니다.
 
 브라우저 검증은 미리보기 서버가 실행된 상태에서 별도 터미널로 수행합니다.
 
@@ -74,5 +74,9 @@ Chromium·Firefox·WebKit에서 320/360/390/520/768/1024/1440px를 검사합니�
 기록·잔액·외형 설정은 브라우저 localStorage에 저장됩니다. 미정산 참가 상태에서 새로고침하면 해당 참가금이 복원됩니다. 캐시아웃은 즉시 저장되며, 종료 전에 페이지를 떠난 파도의 최종 배수는 “종료 미확인”으로 표시합니다. 실제 서버 재접속 정책은 템플릿 전환 시 구현해야 합니다.
 
 런타임 JavaScript 라이브러리 의존성은 없습니다. 폰트와 해당 라이선스는 빌드에 함께 포함되며, 외부 폰트 서버 연결 없이 실행됩니다. 정적 호스팅에는 `dist/` 전체를 사용하고, 파일을 직접 더블클릭하는 대신 HTTP 서버에서 실행합니다.
+
+공개 POC: [TIDELINE 플레이](https://moonddu-star.github.io/surfing/)
+
+GitHub 저장소의 Settings → Pages → Source는 **GitHub Actions**를 사용합니다. 저장소 원본에는 빌드 시 생성되는 폰트가 없으므로 main 브랜치의 루트를 직접 게시하지 않습니다.
 
 저장소: [moonddu-star/surfing](https://github.com/moonddu-star/surfing)

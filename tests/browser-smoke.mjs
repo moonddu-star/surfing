@@ -23,7 +23,7 @@ try {
   await page.locator('#ride-button').click();
   assert.equal(await page.locator('#balance').textContent(), '1,000.00');
   await page.locator('#ride-button').click();
-  await page.clock.runFor(9500);
+  await page.clock.fastForward(9500);
   assert.match(await page.locator('#ride-action').textContent(), /캐시아웃/);
   await page.locator('#ride-button').click();
   assert.match(await page.locator('#result-kicker').textContent(), /PERSONAL BEST/);
@@ -31,7 +31,7 @@ try {
   await page.locator('#demo-tools-toggle').click();
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: `${output}/cashout.png`, fullPage: true });
-  await page.clock.runFor(24000);
+  await page.clock.fastForward(24000);
   await page.locator('[data-view="records"]').click();
   assert.equal(await page.locator('#record-table tr').count(), 1);
   assert.match(await page.locator('#record-table').textContent(), /12.00×/);
@@ -47,24 +47,24 @@ try {
   await page.locator('#view-all-crew').click();
   assert.ok(await page.locator('#dialog-content .crew-row').count() >= 6);
   await page.locator('.dialog-close').click();
-  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.runFor(500);
+  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.fastForward(500);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('#demo-tools-toggle').click();
   await page.locator('#scenario-select').selectOption('2.5');
   await page.locator('#demo-tools-toggle').click();
   await page.locator('#ride-button').click();
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.clock.runFor(8200);
+  await page.clock.fastForward(8200);
   const cashoutBox = await page.locator('#ride-button').boundingBox();
   assert.ok(cashoutBox.y > 0 && cashoutBox.y + cashoutBox.height <= 844, 'Mobile cashout stays inside the viewport');
   await page.screenshot({ path: `${output}/mobile-live.png`, fullPage: false });
   await page.locator('#ride-button').click();
-  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.runFor(500);
+  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.fastForward(500);
   // Instant crash is selected from the visible QA controls, not injected engine state.
   await page.locator('#demo-tools-toggle').click();
   await page.locator('#scenario-select').selectOption('1');
   await page.locator('#ride-button').click();
-  await page.clock.runFor(8100);
+  await page.clock.fastForward(8100);
   assert.match(await page.locator('#result-kicker').textContent(), /WIPEOUT/);
   assert.match(await page.locator('#result-description').textContent(), /지급액 0.00 CR/);
   await page.locator('#demo-tools-toggle').click();
@@ -74,7 +74,7 @@ try {
   await page.screenshot({ path: `${output}/mobile.png`, fullPage: true });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   assert.equal(overflow, false, 'Mobile page must not overflow horizontally');
-  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.runFor(500);
+  while ((await page.locator('#ride-action').textContent()) !== '파도에 합류하기') await page.clock.fastForward(500);
   await page.locator('[data-amount="25"]').click();
   await page.locator('#ride-button').click();
   await page.reload({ waitUntil: 'networkidle' });

@@ -110,6 +110,7 @@ function setTheme(theme) {
 function setBoard(color) { scene.board = color; document.querySelectorAll('[data-board]').forEach(button => { const selected = button.dataset.board === color; button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', selected); }); save(); }
 document.querySelectorAll('[data-theme]').forEach(button => button.addEventListener('click', () => setTheme(button.dataset.theme)));
 document.querySelectorAll('[data-board]').forEach(button => button.addEventListener('click', () => setBoard(button.dataset.board)));
+$('scene-focus').addEventListener('click', () => { const expanded = document.body.classList.toggle('cinema-view'); $('scene-focus').setAttribute('aria-pressed', expanded); $('scene-focus').setAttribute('aria-label', expanded ? '장면 축소' : '장면 확대'); $('scene-focus').querySelector('span').textContent = expanded ? '기본 보기' : '몰입 보기'; });
 $('finish-select').addEventListener('change', event => { scene.finish = event.target.value; save(); });
 if (['daybreak', 'sunset', 'moonlight'].includes(saved.theme)) setTheme(saved.theme);
 if (['#d8f76d', '#f2977d', '#c3c3ee', '#f1efe5'].includes(saved.board)) setBoard(saved.board);

@@ -1,5 +1,7 @@
 # 배럴 카메라 비주얼 개선
 
+> 이 문서는 초기 Canvas 연출 기록이다. 현재 구현은 [3D 코어 장면](three-dimensional-scene.md)을 따른다. 기존 Canvas는 호환 장면으로 유지한다.
+
 작성일: 2026-09-23. 독립 Canvas POC에 적용한 연출이다. 승인 이후 PixiBrown 템플릿·제공 아트로 전환한다.
 
 ## 방향

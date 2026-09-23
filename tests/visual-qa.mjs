@@ -16,7 +16,7 @@ try {
     server.on('error', reject);
     server.on('exit', code => reject(Error(`Visual QA server exited ${code}`)));
   });
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
   for (const [width, theme, finish] of [[1440, 'daybreak', 'air'], [390, 'sunset', 'spray'], [1440, 'moonlight', 'barrel']]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: 'no-preference' });
     const page = await context.newPage(); const errors = [];
@@ -36,6 +36,7 @@ try {
     await page.locator('#ride-button').click();
     await page.clock.fastForward(22000); await page.clock.runFor(100);
     assert.equal(await page.locator('#ocean-stage').getAttribute('data-phase'), 'riding');
+    assert.equal(await page.locator('#ocean').getAttribute('data-renderer'), 'webgl', 'Visual QA must exercise the 3D renderer');
     await page.evaluate(() => scrollTo(0, 0));
     await page.screenshot({ path: `${output}/${theme}-${width}-riding.png`, fullPage: true });
     const stage = await page.locator('#ocean-stage').boundingBox();
@@ -67,14 +68,14 @@ try {
     canvas.style.cssText = 'width:600px;height:460px'; document.body.append(canvas);
     const scene = new OceanScene(canvas);
     const state = { phase: 'riding', multiplier: 2, bet: { status: 'riding' }, crew: [] };
-    scene.draw(1000, state); const first = canvas.toDataURL();
-    scene.draw(3000, { ...state, multiplier: 4 }); const second = canvas.toDataURL();
+    scene.draw(1000, state); const first = scene.canvas.toDataURL();
+    scene.draw(3000, { ...state, multiplier: 4 }); const second = scene.canvas.toDataURL();
     scene.onCashout(3000); state.bet.status = 'cashed';
-    scene.draw(3100, state); const exitStart = canvas.toDataURL();
-    scene.draw(3700, state); const exitEnd = canvas.toDataURL();
+    scene.draw(3100, state); const exitStart = scene.canvas.toDataURL();
+    scene.draw(3700, state); const exitEnd = scene.canvas.toDataURL();
     scene.onCrash(4000); state.phase = 'crashed';
-    scene.draw(4100, state); const crashStart = canvas.toDataURL();
-    scene.draw(4800, state); const crashEnd = canvas.toDataURL();
+    scene.draw(4100, state); const crashStart = scene.canvas.toDataURL();
+    scene.draw(4800, state); const crashEnd = scene.canvas.toDataURL();
     return { ride: first === second, exit: exitStart === exitEnd, crash: crashStart === crashEnd };
   });
   assert.deepEqual(reduced, { ride: true, exit: true, crash: true });

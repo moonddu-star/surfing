@@ -1,4 +1,5 @@
 import './prepare-fonts.mjs';
+import './prepare-runtime.mjs';
 import { mkdir, copyFile, cp, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');

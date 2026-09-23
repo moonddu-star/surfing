@@ -29,7 +29,7 @@ try {
       for (const width of [320, 360, 390, 520, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 900 }); await page.clock.runFor(100);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${name} ${width}px overflow`);
-        const pixels = await page.locator('#ocean').evaluate(canvas => [...canvas.getContext('2d').getImageData(10, 10, 1, 1).data]);
+        const pixels = await page.locator('#ocean').evaluate(canvas => (() => { if (canvas.dataset.renderer === 'webgl') { const gl = canvas.getContext('webgl2'); const p = new Uint8Array(4); gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p); return [...p]; } return [...canvas.getContext('2d').getImageData(10, 10, 1, 1).data]; })());
         assert.equal(pixels[3], 255, `${name} ${width}px canvas must paint`);
         if ([320, 768, 1440].includes(width)) await page.screenshot({ path: `${output}/${name}-${width}.png`, fullPage: true });
       }
@@ -38,7 +38,7 @@ try {
       await page.locator('#demo-tools-toggle').click(); await page.locator('#scenario-select').selectOption('12'); await page.locator('#demo-tools-toggle').click();
       await page.locator('#bet-amount').fill('1.01'); await page.locator('#ride-button').click();
       assert.equal(await page.locator('#balance').textContent(), '998.99');
-      await page.clock.runFor(8200);
+      await page.clock.fastForward(8200);
       await page.locator('[data-view="records"]').click();
       assert.equal(await page.locator('#play-view').isVisible(), true, 'Active ride must keep cashout available');
       await page.setViewportSize({ width: 768, height: 900 }); await page.clock.runFor(100);
@@ -55,9 +55,9 @@ try {
       await page.locator('[data-view="records"]').click(); assert.match(await page.locator('#record-table').textContent(), /종료 미확인/);
       await page.locator('#back-to-play').click();
       await page.locator('#help-button').click(); await page.keyboard.press('Escape'); assert.equal(await page.locator('#info-dialog').isVisible(), false);
-      await page.locator('#sound-button').click(); await page.clock.runFor(2200);
+      await page.locator('#sound-button').click(); await page.clock.fastForward(2200);
       if (await page.locator('#sound-button').getAttribute('aria-pressed') === 'true') {
-        await page.locator('#sound-button').click(); await page.clock.runFor(2200);
+        await page.locator('#sound-button').click(); await page.clock.fastForward(2200);
         assert.equal(await page.locator('#sound-button').getAttribute('aria-pressed'), 'false');
       } else assert.match(await page.locator('#toast').textContent(), /사운드를 사용할 수 없어요/);
       assert.deepEqual(errors, []); summaries.push(`${name}: seven widths, painted canvas, validation, decimal stake, tablet CTA, immediate log, reload, keyboard dialog, sound; passed`);

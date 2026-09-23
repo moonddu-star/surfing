@@ -21,3 +21,5 @@ Thumbs.db
 
 tests/artifacts/
 public/fonts/
+
+public/vendor/

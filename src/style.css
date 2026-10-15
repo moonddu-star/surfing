@@ -50,3 +50,7 @@
 @media(min-width:801px) and (max-width:1100px){.ocean-stage{height:475px}.stage-actions{gap:5px}.scene-focus span{display:none}.stage-readout{left:23px}.stage-readout #multiplier{font-size:82px}}
 @media(max-width:800px){.ocean-stage{height:490px}.cinema-view .game-layout{grid-template-columns:1fr}.cinema-view .ocean-stage{height:65svh;min-height:440px}.cinema-view .app-shell{padding-left:20px;padding-right:20px}}
 @media(max-width:520px){.ocean-stage{height:440px;border-radius:12px}.stage-topline{left:16px;right:16px;top:15px}.stage-actions{gap:5px}.stage-topline #round-tag{font-size:7px;padding:6px}.scene-focus{min-height:30px;padding:4px 7px}.scene-focus span{display:none}.stage-readout{top:68px;left:19px}.stage-readout #multiplier{font-size:70px}.ocean-stage[data-phase="waiting"] .stage-readout #multiplier{font-size:66px}.stage-readout #phase-description{max-width:142px;font-size:9px}.camera-caption{font-size:7px;margin-bottom:10px}.cinema-view .app-shell{padding-left:14px;padding-right:14px}.cinema-view .ocean-stage{height:65svh;min-height:440px}}
+
+/* Keep the result outside the rider's rightward exit path. */
+.ride-result{top:258px;bottom:auto;left:28px;right:auto;max-width:205px}
+@media(max-width:520px){.ride-result{top:220px;bottom:auto;left:19px;right:auto;max-width:148px;padding:10px}.ride-result>strong{font-size:30px}.ride-result.loss>strong{font-size:18px}}

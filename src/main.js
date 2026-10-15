@@ -48,7 +48,7 @@ function render(now) {
   const own = game.bet; document.body.classList.toggle('live-own', activeView === 'play' && riding && own?.status === 'riding'); const count = Math.max(0, Math.ceil((CONFIG.waitingMs - (now - game.phaseStarted)) / 1000));
   $('ocean-stage').dataset.phase = game.phase;
   $('ocean-stage').dataset.result = own?.status || 'spectating';
-  $('camera-caption').textContent = waiting ? 'FIND YOUR LINE' : riding ? own?.status === 'cashed' ? 'YOUR MOMENT. CAPTURED.' : 'INSIDE THE BARREL' : 'THE OCEAN GOES ON';
+  $('camera-caption').textContent = waiting ? 'FIND YOUR LINE' : riding ? own?.status === 'cashed' ? 'YOUR MOMENT. CAPTURED.' : 'RIDE THE OPEN FACE' : 'THE OCEAN GOES ON';
   $('round-tag').textContent = `WAVE ${String(game.round).padStart(3, '0')}`;
   $('phase-label').textContent = waiting ? '다음 파도를 준비하세요' : riding ? '지금, 당신의 파도' : '이번 파도 종료';
   $('multiplier').textContent = waiting ? `00:${String(count).padStart(2, '0')}` : mult(game.multiplier);

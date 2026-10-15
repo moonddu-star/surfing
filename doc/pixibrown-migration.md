@@ -4,13 +4,13 @@
 
 ## 현재 POC의 역할
 
-현재 구현은 HTML/CSS와 Canvas 2D로 플레이 흐름·시각 연출을 검증한다. `doc/skills/SKILL.md`의 최종 prefab 구조를 구현한 상태가 아니다. POC의 DOM·Canvas 코드를 최종 클라이언트 구조로 확정하지 않는다.
+현재 구현은 HTML/CSS와 Canvas 2D 횡스크롤로 플레이 흐름·시각 연출을 검증한다. `doc/skills/SKILL.md`의 최종 prefab 구조를 구현한 상태가 아니다. POC의 DOM·Canvas 코드를 최종 클라이언트 구조로 확정하지 않는다.
 
 | 현재 파일 | 책임 | 전환 대상 |
 | --- | --- | --- |
 | `src/game-engine.js` | 로컬 공통 라운드, 데모 금액·정산, 크루 시뮬레이션, 개인 기록 | 확정 서버 계약 및 템플릿 로컬 서버. 수학·프로토콜은 별도 검증 |
 | `src/main.js` | UI 이벤트, 표시, 설정·기록 저장, 사운드 트리거 | `src/game/`의 컴포넌트·GameMain 연동. `@Serialize`로 노드 연결 |
-| `src/ocean-scene.js` | 절차적으로 그리는 파도, 서퍼, 탈출·와이프아웃 | 제공 PNG·Spine·애니메이션을 사용하는 prefab·씬 |
+| `src/ocean-scene.js`·`src/side-scroll-scene.js` | 절차적으로 그리는 파도, 서퍼, 탈출·와이프아웃 | 제공 PNG·Spine·애니메이션을 사용하는 prefab·씬 |
 | `src/style.css` | POC 색·폰트·레이아웃·반응형 | 확정 디자인에 따른 prefab marker·레이아웃 값 |
 | `index.html` | 화면 구조·조작부·대화상자 | `game.prefab`, 아이템 prefab, intro 공용 팝업 |
 | `tests/game-engine.test.mjs` | 정산 경계·중복 요청·기록 테스트 | 실제 서버 계약에 맞춰 기대값을 재검증해 이식 |

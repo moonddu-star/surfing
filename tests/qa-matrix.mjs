@@ -29,7 +29,7 @@ try {
       for (const width of [320, 360, 390, 520, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 900 }); await page.clock.runFor(100);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${name} ${width}px overflow`);
-        const pixels = await page.locator('#ocean').evaluate(canvas => (() => { if (canvas.dataset.renderer === 'webgl') { const gl = canvas.getContext('webgl2'); const p = new Uint8Array(4); gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p); return [...p]; } return [...canvas.getContext('2d').getImageData(10, 10, 1, 1).data]; })());
+        const pixels = await page.locator('#ocean').evaluate(canvas => [...canvas.getContext('2d').getImageData(10, 10, 1, 1).data]);
         assert.equal(pixels[3], 255, `${name} ${width}px canvas must paint`);
         if ([320, 768, 1440].includes(width)) await page.screenshot({ path: `${output}/${name}-${width}.png`, fullPage: true });
       }

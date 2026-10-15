@@ -16,7 +16,7 @@ try {
     server.on('error', reject);
     server.on('exit', code => reject(Error(`Visual QA server exited ${code}`)));
   });
-  browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
+  browser = await chromium.launch({ headless: true });
   for (const [width, theme, finish] of [[1440, 'daybreak', 'air'], [390, 'sunset', 'spray'], [1440, 'moonlight', 'barrel']]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: 'no-preference' });
     const page = await context.newPage(); const errors = [];
@@ -36,7 +36,7 @@ try {
     await page.locator('#ride-button').click();
     await page.clock.fastForward(22000); await page.clock.runFor(100);
     assert.equal(await page.locator('#ocean-stage').getAttribute('data-phase'), 'riding');
-    assert.equal(await page.locator('#ocean').getAttribute('data-renderer'), 'webgl', 'Visual QA must exercise the 3D renderer');
+    assert.equal(await page.locator('#ocean').getAttribute('data-renderer'), 'canvas', 'Visual QA must exercise the side-scrolling renderer');
     await page.evaluate(() => scrollTo(0, 0));
     await page.screenshot({ path: `${output}/${theme}-${width}-riding.png`, fullPage: true });
     const stage = await page.locator('#ocean-stage').boundingBox();

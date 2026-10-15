@@ -4,7 +4,7 @@ const ease = x => { const t = clamp(x); return t * t * (3 - 2 * t); };
 const mod = (x, n) => ((x % n) + n) % n;
 const themes = {
   daybreak: { sky: '#486e83', haze: '#edc99c', sun: '#fff0bb', sea: '#57b5b4', crest: '#a4efd8', face: '#2cbdac', mid: '#137e8c', deep: '#073c57', foam: '#edffe9', island: '#486f79' },
-  sunset: { sky: '#795c83', haze: '#f4ab85', sun: '#ffe4a2', sea: '#83aaa8', crest: '#e4e6b9', face: '#57b9b0', mid: '#387e91', deep: '#273b62', foam: '#fff1d1', island: '#79647c' },
+  sunset: { sky: '#bc4c42', haze: '#ffa13c', sun: '#fff18c', sea: '#cb794e', crest: '#82d9d1', face: '#168ca5', mid: '#105674', deep: '#071d36', foam: '#fff1bf', island: '#b6624d' },
   moonlight: { sky: '#172a4b', haze: '#577c9b', sun: '#d9f7ec', sea: '#396d91', crest: '#95dfe3', face: '#3b9fbc', mid: '#235d86', deep: '#0d2849', foam: '#d7f8fa', island: '#2b4767' }
 };
 
@@ -13,7 +13,7 @@ export class OceanScene {
   constructor(canvas, label) {
     this.canvas = canvas; this.label = label; this.ctx = canvas.getContext('2d', { alpha: false });
     canvas.dataset.renderer = 'canvas';
-    this.theme = 'daybreak'; this.board = '#d8f76d'; this.finish = 'air';
+    this.theme = 'sunset'; this.board = '#d8f76d'; this.finish = 'air';
     this.cashoutAt = -Infinity; this.crashAt = -Infinity; this.crewFinishTimes = new Map();
     this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
     this.reducedMotion = this.motionQuery.matches;
@@ -91,7 +91,7 @@ export class OceanScene {
   drawSky(p, t) {
     const c = this.ctx, w = this.width, h = this.height;
     c.fillStyle = this.gradient(0, 0, 0, h * .61, [[0, p.sky], [.75, p.haze], [1, p.sun]]); c.fillRect(0, 0, w, h);
-    const sunX = w * .79, sunY = h * .275, radius = h * .066;
+    const sunX = w * .81, sunY = h * .34, radius = h * (this.theme === 'sunset' ? .115 : .066);
     const glow = c.createRadialGradient(sunX, sunY, radius, sunX, sunY, radius * 4);
     glow.addColorStop(0, p.sun + '38'); glow.addColorStop(1, p.sun + '00'); c.fillStyle = glow; c.fillRect(0, 0, w, h * .6);
     this.ellipse(sunX, sunY, radius, radius, p.sun);
@@ -153,13 +153,20 @@ export class OceanScene {
     c.restore(); c.globalAlpha = 1;
     const crest = [['moveTo', -w * .10, h * .69], ['bezierCurveTo', w * .06, h * .455, w * .17, h * .34, w * .32, h * .35], ['bezierCurveTo', w * .45, h * .35, w * .53, h * .43, w * .50, h * .535]];
     c.lineCap = 'round'; this.path(crest, null, p.crest, h * .029); this.path(crest, null, p.foam, h * .011);
-    // Wind-blown crest spray. Seeded positions make captures deterministic.
-    for (let i = 0; i < 65; i++) {
-      const u = i / 64, age = mod(i * .371 + t * .48, 1);
-      const x = w * (.04 + u * .45) - age * w * .045;
-      const y = h * (.35 + .70 * (u - .62) ** 2) - Math.sin(age * Math.PI) * h * (.018 + i % 4 * .008);
-      c.globalAlpha = (1 - age) * .55;
-      this.ellipse(x, y, 1 + i % 3 * .6, .7 + i % 2, p.foam, -.3);
+    // Broken foam follows the crest; the brighter flying droplets catch the sunset.
+    const point = (a, b, d, e, u) => (1-u)**3*a + 3*(1-u)**2*u*b + 3*(1-u)*u*u*d + u**3*e;
+    for (let i = 0; i < 110; i++) {
+      const u = i < 75 ? i / 74 : (i - 75) / 34;
+      const xx = i < 75 ? point(-.10, .06, .17, .32, u) : point(.32, .45, .53, .50, u);
+      const yy = i < 75 ? point(.69, .455, .34, .35, u) : point(.35, .35, .43, .535, u);
+      const age = mod(i * .371 + t * .48, 1);
+      const size = 1.8 + i % 5 * .65;
+      c.globalAlpha = .72;
+      this.ellipse(w * xx, h * yy + Math.sin(i * 4.1) * 2, size * 1.4, size, p.foam, -.3);
+      for (let j = 0; j < 2; j++) {
+        c.globalAlpha = (1 - age) * (.60 - j * .15);
+        this.ellipse(w * xx - age * (14 + j * 16), h * yy - Math.sin(age * Math.PI) * (12 + i % 7 * 4 + j * 13), .6 + i % 3 * .45, .6 + i % 2 * .3, p.foam);
+      }
     }
     c.globalAlpha = .8;
     this.path([['moveTo', w * .39, h * .55], ['bezierCurveTo', w * .40, h * .72, w * .64, h * .775, w * 1.05, h * .765]], null, p.crest, 2);
@@ -202,29 +209,31 @@ export class OceanScene {
     c.restore();
   }
   drawSurfer(x, y, scale, board, t, style, progress) {
-    const c = this.ctx, air = style === 'air';
-    const angle = air ? -Math.sin(progress * Math.PI) * .65 : style === 'spray' ? Math.sin(progress * Math.PI) * .35 : -.035 + Math.sin(t * 1.6) * .018;
+    const c = this.ctx, air = style === 'air', ink = '#080f20';
+    const angle = air ? -Math.sin(progress * Math.PI) * .65 : style === 'spray' ? Math.sin(progress * Math.PI) * .35 : -.045 + Math.sin(t * 1.6) * .018;
     c.save(); c.translate(x, y); c.rotate(angle); c.scale(scale, scale); c.lineCap = 'round'; c.lineJoin = 'round';
-    if (!air) this.ellipse(0, 9, 53, 5, '#052c4455');
-    // Profile board: upturned nose, coloured rail, fin and trailing leash.
-    this.path([['moveTo', -53, 2], ['quadraticCurveTo', 5, 8, 57, -5], ['quadraticCurveTo', 46, 13, -50, 8], ['closePath']], board, '#ecffe4', 1);
-    this.path([['moveTo', -35, 9], ['lineTo', -39, 19], ['lineTo', -26, 10]], '#123c52');
-    this.path([['moveTo', -48, 4], ['quadraticCurveTo', -69, -3, -27, -7]], null, '#e0efe6aa', .8);
-    this.path([['moveTo', -11, -34], ['lineTo', -31, -19], ['lineTo', -25, -3]], null, '#153148', 10);
-    this.path([['moveTo', -9, -32], ['lineTo', 15, -24], ['lineTo', 27, 0]], null, '#203c51', 11);
-    this.path([['moveTo', -28, -15], ['lineTo', -25, -4]], null, '#c98d70', 6);
-    this.path([['moveTo', 21, -14], ['lineTo', 27, -2]], null, '#f1bc91', 6);
-    this.path([['moveTo', -25, -2], ['lineTo', -17, 0]], null, '#dfaa87', 4);
-    this.path([['moveTo', 27, 0], ['lineTo', 36, 0]], null, '#f6c7a0', 4);
-    this.path([['moveTo', -18, -55], ['quadraticCurveTo', -6, -62, 6, -52], ['lineTo', 5, -34], ['quadraticCurveTo', -8, -27, -20, -34], ['closePath']], '#f49169', '#ffc39a', .7);
-    this.path([['moveTo', -18, -43], ['quadraticCurveTo', -7, -38, 5, -42]], null, '#ffe4b4', 4);
-    this.path([['moveTo', -17, -52], ['lineTo', -35, air ? -61 : -40], ['lineTo', -49, air ? -70 : -47]], null, '#ce967b', 6);
-    this.path([['moveTo', 3, -53], ['lineTo', 21, air ? -56 : -43], ['lineTo', 39, air ? -69 : -49]], null, '#f8c49c', 5.5);
-    this.path([['moveTo', -4, -58], ['lineTo', 0, -65]], null, '#eaae87', 7);
-    this.ellipse(1, -70, 7, 8, '#f5c096', -.15);
-    this.path([['moveTo', -6, -68], ['bezierCurveTo', -12, -81, 7, -84, 10, -72], ['lineTo', 4, -73], ['lineTo', -2, -70], ['closePath']], '#172d40');
-    this.path([['moveTo', -5, -74], ['lineTo', -13, -75], ['lineTo', -6, -79]], '#172d40');
-    this.path([['moveTo', -4, -77], ['quadraticCurveTo', 2, -80, 6, -76]], null, '#688084', 1);
+    if (!air) this.ellipse(0, 9, 53, 5, '#051c3655');
+    // Board remains a dark shape. A thin coloured rail preserves customisation.
+    this.path([['moveTo', -53, 2], ['quadraticCurveTo', 9, 7, 57, -7], ['quadraticCurveTo', 44, 13, -49, 8], ['closePath']], '#0a263c');
+    c.globalAlpha *= .8;
+    this.path([['moveTo', -50, 3], ['quadraticCurveTo', 10, 9, 56, -6]], null, board, 1.15);
+    c.globalAlpha /= .8;
+    this.path([['moveTo', -35, 8], ['lineTo', -39, 18], ['lineTo', -25, 10]], ink);
+    this.path([['moveTo', -48, 4], ['quadraticCurveTo', -62, -7, -31, -4]], null, ink, .8);
+    // One silhouette: low hips, forward lean and asymmetric bent knees.
+    this.path([['moveTo', -13, -31], ['quadraticCurveTo', -23, -24, -22, -15], ['lineTo', -34, -1]], null, ink, 8);
+    this.path([['moveTo', -9, -28], ['quadraticCurveTo', 2, -30, 15, -26], ['quadraticCurveTo', 19, -25, 16, -17], ['lineTo', 10, -1]], null, ink, 9);
+    this.path([['moveTo', -34, -1], ['quadraticCurveTo', -28, 1, -23, 0]], null, ink, 4);
+    this.path([['moveTo', 10, -1], ['quadraticCurveTo', 17, 2, 24, 0]], null, ink, 4);
+    this.path([['moveTo', -19, -31], ['bezierCurveTo', -23, -40, -6, -53, 4, -57], ['quadraticCurveTo', 13, -61, 20, -52], ['quadraticCurveTo', 13, -46, 5, -42], ['lineTo', -3, -30], ['quadraticCurveTo', -7, -24, -19, -31], ['closePath']], ink);
+    // Trailing hand and forward reaching hand clearly show the direction of travel.
+    this.path([['moveTo', 4, -54], ['quadraticCurveTo', -12, air ? -62 : -51, -23, air ? -64 : -44], ['lineTo', -39, air ? -70 : -32]], null, ink, 5.8);
+    this.path([['moveTo', -39, air ? -70 : -32], ['lineTo', -45, air ? -75 : -28]], null, ink, 2.8);
+    this.path([['moveTo', 16, -52], ['quadraticCurveTo', 26, air ? -61 : -45, 32, air ? -66 : -41], ['lineTo', 46, air ? -72 : -33]], null, ink, 5.5);
+    this.path([['moveTo', 46, air ? -72 : -33], ['lineTo', 51, air ? -77 : -31], ['lineTo', 52, air ? -79 : -28]], null, ink, 2.6);
+    this.path([['moveTo', 13, -56], ['lineTo', 20, -64]], null, ink, 7);
+    // Nose, chin and hair are described by the outline, with no facial detailing.
+    this.path([['moveTo', 16, -62], ['bezierCurveTo', 12, -68, 15, -77, 21, -79], ['quadraticCurveTo', 29, -81, 32, -73], ['lineTo', 31, -69], ['lineTo', 35, -66], ['lineTo', 31, -65], ['quadraticCurveTo', 32, -59, 26, -60], ['lineTo', 23, -57], ['closePath']], ink);
     c.restore();
   }
 }

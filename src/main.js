@@ -112,7 +112,8 @@ document.querySelectorAll('[data-theme]').forEach(button => button.addEventListe
 document.querySelectorAll('[data-board]').forEach(button => button.addEventListener('click', () => setBoard(button.dataset.board)));
 $('scene-focus').addEventListener('click', () => { const expanded = document.body.classList.toggle('cinema-view'); $('scene-focus').setAttribute('aria-pressed', expanded); $('scene-focus').setAttribute('aria-label', expanded ? '장면 축소' : '장면 확대'); $('scene-focus').querySelector('span').textContent = expanded ? '기본 보기' : '몰입 보기'; });
 $('finish-select').addEventListener('change', event => { scene.finish = event.target.value; save(); });
-if (['daybreak', 'sunset', 'moonlight'].includes(saved.theme)) setTheme(saved.theme);
+const requestedTheme = new URLSearchParams(location.search).get('theme');
+setTheme(['daybreak', 'sunset', 'moonlight'].includes(requestedTheme) ? requestedTheme : ['daybreak', 'sunset', 'moonlight'].includes(saved.theme) ? saved.theme : 'sunset');
 if (['#d8f76d', '#f2977d', '#c3c3ee', '#f1efe5'].includes(saved.board)) setBoard(saved.board);
 if (['air', 'spray', 'barrel'].includes(saved.finish)) { scene.finish = saved.finish; $('finish-select').value = saved.finish; }
 $('sound-button').addEventListener('click', async () => {
